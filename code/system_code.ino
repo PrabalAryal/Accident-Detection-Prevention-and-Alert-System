@@ -15,7 +15,7 @@
 SoftwareSerial SIM900A(10, 11);
 MPU6050 mpu;
 
-const float alpha = 0.95; // Weight for gyro data (0.0 - 1.0, higher values give more weight to gyro)
+const float alpha = 0.95; 
 float gyroData, accelData;
 unsigned long lastTime = 0;
 float dt = 0.0; // Time interval between sensor readings in seconds
@@ -24,12 +24,12 @@ bool pitchExceeded = false;
 float filteredGyroData = 0.0;
 
 void setup() {  
-  // Initialize Serial communication
+  
   Serial.begin(9600);
 
   // Initialize SIM900A module
   SIM900A.begin(9600); 
-  delay(2000); // Wait for the module to respond
+  delay(2000); 
   // Initialize MPU6050 sensor
   Wire.begin();
   mpu.initialize();
@@ -46,23 +46,23 @@ void setup() {
 }
 
 void loop() {
-  // Calculate time interval since last reading
+  
   unsigned long now = millis();
   dt = (now - lastTime) / 1000.0; // Convert milliseconds to seconds
   lastTime = now;
 
-  // Read vibration sensor data if sensor is connected and returning valid values
+  
   int vibration = analogRead(VIBRATION_SENSOR_PIN);
 
-  // Read gyro sensor data if sensor is connected and returning valid values
+  
   int16_t gyroX, gyroY, gyroZ;
   mpu.getRotation(&gyroX, &gyroY, &gyroZ); {
-    gyroData = gyroY; // Use gyroY data as an example, adjust for your sensor orientation if needed
-    // Apply low-pass filter to gyro data
+    gyroData = gyroY; 
+    
     filteredGyroData = GYRO_WEIGHT * filteredGyroData + (1 - GYRO_WEIGHT) * gyroData;
   }
 
-  // Read accelerometer data if sensor is connected and returning valid values
+  
   int16_t accelX, accelY, accelZ;
   mpu.getAcceleration(&accelX, &accelY, &accelZ); {
     // Calculate roll and pitch angles
@@ -125,12 +125,12 @@ if (alcohol > 0 && alcohol < 1023) { // Check if the sensor reading is within a 
     digitalWrite(RELAY_MODULE_PIN, LOW);
   }
 
-  // Print message to Serial Monitor only if angle is exceeded
+  
   if (rollExceeded || pitchExceeded) {
     Serial.println("Vehicle angle exceeded 45 degrees!");
   }
 
-  // Add a delay to control the loop rate
+  
   delay(100);
 }
 
