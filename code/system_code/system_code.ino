@@ -23,7 +23,7 @@ TinyGPS gps; // GPS object
 
 unsigned long lastTime = 0;
 String phoneNumber = "+9779867522201";
-String hospitalNumber = "+9779567575910"; 
+String hospitalNumber = "+9779867575910"; 
 float latitude, longitude;
 
 void setup() {
