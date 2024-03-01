@@ -99,6 +99,13 @@ void loop() {
         digitalWrite(BUZZER_PIN, HIGH);
         delay(3000); // Buzzer on for 3 seconds
         digitalWrite(BUZZER_PIN, LOW);
+        if (eyestate==HIGH){
+          delay(1000);
+          digitalWrite(RELAY_MODULE_PIN, HIGH);
+          delay(1000);
+          sendMessage("CRASH ALERT .Current location: http://maps.google.com/maps?q=" + String(latitude, 6) + "," + String(longitude, 6));
+          digitalwrite(RELAY_MODULE_PIN,LOW);
+        }
         break;
       }
     }
