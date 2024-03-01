@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include <SoftwareSerial.h>
-#include <MPU6050.h>
-#include <TinyGPS.h>
+#include <MPU6050.h>// for gyro sensor
+#include <TinyGPS.h>// for gps module
 
 #define VIBRATION_SENSOR_PIN A0
 #define MQ3_SENSOR_PIN A1
@@ -11,28 +11,23 @@
 #define VOLTAGE_THRESHOLD 4 // Voltage threshold in volts
 #define TUMBLE_THRESHOLD 90 // Tumble angle threshold in degrees
 #define VIBRATION_THRESHOLD 800 // Vibration threshold for ignoring pitch and roll angles
-#define GYRO_WEIGHT 0.98 // Weight for gyro data in the low-pass filter
-#define GPS_TX_PIN 8
-#define GPS_RX_PIN 12
-#define GSM_TX_PIN 10
-#define GSM_RX_PIN 11
+#define GPS_TX_PIN 8 // in arduino 8 pin
+#define GPS_RX_PIN 12// in arduino 12 pin
+#define GSM_TX_PIN 10 // in ardunio 10 pin
+#define GSM_RX_PIN 11 // in ardunio 11 pin
 
 SoftwareSerial SIM900A(GSM_TX_PIN, GSM_RX_PIN);
 SoftwareSerial gpsSerial(GPS_TX_PIN, GPS_RX_PIN); // GPS connection
 MPU6050 mpu;
 TinyGPS gps; // GPS object
 
-const float alpha = 0.95; // Weight for gyro data (0.0 - 1.0, higher values give more weight to gyro)
 float gyroData, accelData;
 unsigned long lastTime = 0;
 float dt = 0.0; // Time interval between sensor readings in seconds
 bool rollExceeded = false;
 bool pitchExceeded = false;
-float filteredGyroData = 0.0;
 String phoneNumber = "+9779867522201";
 float latitude, longitude;
-unsigned long fix_age; // Modify this with your phone number
-
 void setup() {
   // Initialize Serial communication
   Serial.begin(9600);
@@ -72,9 +67,6 @@ void loop() {
   int16_t gyroX, gyroY, gyroZ;
   mpu.getRotation(&gyroX, &gyroY, &gyroZ); {
     gyroData = gyroY; // Use gyroY data as an example, adjust for your sensor orientation if needed
-    // Apply low-pass filter to gyro data
-    filteredGyroData = GYRO_WEIGHT * filteredGyroData + (1 - GYRO_WEIGHT) * gyroData;
-  }
 
   // Read accelerometer data if sensor is connected and returning valid values
   int16_t accelX, accelY, accelZ;
