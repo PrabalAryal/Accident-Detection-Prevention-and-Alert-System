@@ -54,16 +54,16 @@ void loop() {
   float vibrationPercentage = (vibration / 1023.0) * 100.0;
 
   if (vibrationPercentage > 70) {
-    sendMessage("CRITICAL ACCIDENT ALERT. Current location: http://maps.google.com/maps?q=" + String(latitude, 6) + "," + String(longitude, 6));
+    sendMessage("CRITICAL ACCIDENT ALERT,Driver's may be at high risk. Current location: http://maps.google.com/maps?q=" + String(latitude, 6) + "," + String(longitude, 6));
   } else if (vibrationPercentage > 30 && vibrationPercentage <= 70) {
-     sendMessageToHospital("MODERATE ACCIDENT ALERT. Current location: http://maps.google.com/maps?q=" + String(latitude, 6) + "," + String(longitude, 6));
+     sendMessageToHospital("ACCIDENT ALERT. Current location: http://maps.google.com/maps?q=" + String(latitude, 6) + "," + String(longitude, 6));
   }
 
   int eyeState = digitalRead(EYE_BLINK_SENSOR_PIN);
   if (eyeState == HIGH) { 
     unsigned long blinkStartTime = millis(); 
     while (digitalRead(EYE_BLINK_SENSOR_PIN) == HIGH) {
-      if (millis() - blinkStartTime >= 4000) { 
+      if (millis() - blinkStartTime >= 5000) { 
         Serial.println("Driver's eyes closed for too long");
         digitalWrite(BUZZER_PIN, HIGH);
         delay(3000);
