@@ -20,11 +20,10 @@ SoftwareSerial SIM900A(GSM_TX_PIN, GSM_RX_PIN);
 SoftwareSerial gpsSerial(GPS_TX_PIN, GPS_RX_PIN);     
 MPU6050 mpu;
 TinyGPS gps; // GPS object
-
 unsigned long lastTime = 0;
 String phoneNumber = "+9779867522201";
 String hospitalNumber = "+9779867575910"; 
-float latitude, longitude;
+float latitude = 0, longitude = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -52,11 +51,24 @@ void loop() {
 
   int vibration = analogRead(VIBRATION_SENSOR_PIN);
   float vibrationPercentage = (vibration / 1023.0) * 100.0;
+  int alcohol = analogRead(MQ3_SENSOR_PIN);
+
+  if (alcohol > 400) {
+    Serial.println("Drunk driver detected");
+    digitalWrite(BUZZER_PIN, HIGH);
+    digitalWrite(RELAY_MODULE_PIN, HIGH);
+    delay(1000);
+    digitalWrite(BUZZER_PIN, LOW);
+    digitalWrite(RELAY_MODULE_PIN, LOW);
+  }
 
   if (vibrationPercentage > 70) {
-    sendMessage("CRITICAL ACCIDENT ALERT,Driver's may be at high risk. Current location: http://maps.google.com/maps?q=" + String(latitude, 6) + "," + String(longitude, 6));
+    sendMessageToHospital("CRITICAL ACCIDENT ALERT,Driver's may be at high risk. Current location: http://maps.google.com/maps?q=" + String(latitude, 6) + "," + String(longitude, 6));
   } else if (vibrationPercentage > 30 && vibrationPercentage <= 70) {
-     sendMessageToHospital("ACCIDENT ALERT. Current location: http://maps.google.com/maps?q=" + String(latitude, 6) + "," + String(longitude, 6));
+    sendMessage("ACCIDENT ALERT. Current location: http://maps.google.com/maps?q=" + String(latitude, 6) + "," + String(longitude, 6));
+  }
+  else{
+    break;
   }
 
   int eyeState = digitalRead(EYE_BLINK_SENSOR_PIN);
@@ -80,12 +92,27 @@ void loop() {
     }
   }
 
+  int16_t accelX, accelY, accelZ;
+  mpu.getAcceleration(&accelX, &accelY, &accelZ); 
+  float roll = atan2(accelY, accelZ) * 180.0 / PI;
+  float pitch = atan2(-accelX, sqrt(accelY * accelY + accelZ * accelZ)) * 180.0 / PI;
+  if (vibration < VIBRATION_THRESHOLD && (abs(roll) > TUMBLE_THRESHOLD || abs(pitch) > TUMBLE_THRESHOLD)) {
+    Serial.println("Vehicle pitch or roll angle exceeds 90 degrees");
+    digitalWrite(RELAY_MODULE_PIN, HIGH);
+    delay(1000);
+    sendMessage("Vehicle tumbled");
+    digitalWrite(RELAY_MODULE_PIN, LOW);
+  }
+
   while (gpsSerial.available() > 0) {
     if (gps.encode(gpsSerial.read())) {
       gps.f_get_position(&latitude, &longitude);
-      sendMessage("Current location: http://maps.google.com/maps?q=" + String(latitude, 6) + "," + String(longitude, 6));
+      if (latitude != TinyGPS::GPS_INVALID_F_ANGLE && longitude != TinyGPS::GPS_INVALID_F_ANGLE) {
+        sendMessage("Current location: http://maps.google.com/maps?q=" + String(latitude, 6) + "," + String(longitude, 6));
+      }
     }
   }
+
   delay(100);
 }
 
@@ -99,6 +126,7 @@ void sendMessage(String message) {
   SIM900A.println((char)26);
   delay(1000);
 }
+
 
 void sendMessageToHospital(String message) {
   SIM900A.println("AT+CMGF=1");
